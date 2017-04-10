@@ -1,0 +1,51 @@
+
+<script type='text/javascript' src='http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var loc = new Microsoft.Maps.Location(47.592, -122.332);
+        var mapOptions = {
+            zoom: 15,
+            center: loc,
+            credentials: 'AmTOjxQXZeKHxacoFI3IoPyR6PHW0U-r0NgDSQ8F-x0dt97mnLMFKREiS96mkOkX',
+        };
+        map = new Microsoft.Maps.Map($('.map')[0], mapOptions);
+        
+        if("{{ latitude }}" !== "0"){
+            loc = new Microsoft.Maps.Location("{{ latitude }}", "{{ longitude }}");
+            var myloc = new Microsoft.Maps.Pushpin(loc, {text:"Your Loc"});
+            map.entities.push(myloc);
+
+            {% for shop in shops %}
+                latlng = new Microsoft.Maps.Location("{{ shop.location.y }}", "{{ shop.location.x }}");
+                marker = new Microsoft.Maps.Pushpin(latlng, {text:"{{ shop.name }}", icon: '/static/images/bluepin.png', width: 50, height: 50, draggable: true});
+                map.entities.push(marker);
+            {% endfor %}
+        }
+
+        // Center the map on the location
+        map.setView({center: loc, zoom: 15});
+        
+    });
+</script>
+
+<h1>Shop Finder Application</h1>
+
+<form method="post" action="./">
+    {% csrf_token %}
+    <table>
+        {{ form }}
+    </table>
+    <input type="submit" value="Search" />
+</form>
+
+{% if shops %}
+<h2>Shops near you</h2>
+<ul>
+    {% for shop in shops %}
+    <li><b>{{ shop.name }}</b>: distance: {{ shop.distance }}</li>
+    {% endfor %}
+</ul>
+{% endif %} 
+
+<div class="map" style="position: relative; width: 800px; height: 400px;"></div>
